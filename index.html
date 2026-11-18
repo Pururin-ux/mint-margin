@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An offline calculator for Cashu input fees and Lightning melt quote coverage.">
+  <meta name="color-scheme" content="light">
+  <title>Mint Margin · Cashu melt planner</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./planner.js" defer></script>
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <header class="site-header shell">
+    <span class="brand"><span class="brand-mark" aria-hidden="true">+</span> Mint Margin</span>
+    <a id="help-link" href="#about">How fees work</a>
+  </header>
+
+  <main class="shell">
+    <div class="intro">
+      <h1>Will this melt clear?</h1>
+      <p>Check whether your Cashu proofs cover a Lightning invoice and its fees.</p>
+    </div>
+
+    <div class="workspace">
+      <form class="panel input-panel" id="planner" aria-labelledby="inputs-title">
+        <header class="panel-heading">
+          <h2 id="inputs-title">Proofs at one mint</h2>
+          <button type="button" id="sample">Load 100-sat example</button>
+        </header>
+
+        <table class="proofs">
+          <thead>
+            <tr>
+              <th scope="col">Denomination <span>(sat)</span></th>
+              <th scope="col">Count</th>
+              <th scope="col">Fee <span>(ppk)</span></th>
+              <th scope="col"><span class="sr-only">Remove</span></th>
+            </tr>
+          </thead>
+          <tbody id="groups"></tbody>
+        </table>
+        <template id="proof-row">
+          <tr>
+            <td><input data-field="amount" type="number" min="1" max="100000" step="1" inputmode="numeric"></td>
+            <td><input data-field="count" type="number" min="1" max="28" step="1" inputmode="numeric"></td>
+            <td><input data-field="feeRate" type="number" min="0" max="1000000" step="1" inputmode="numeric"></td>
+            <td><button type="button" class="remove" title="Remove proof group">×</button></td>
+          </tr>
+        </template>
+        <button class="add" type="button" id="add">+ Add proof group</button>
+
+        <div class="quote-fields">
+          <label for="invoice">Invoice (sat)
+            <input id="invoice" type="number" min="1" max="100000" step="1" inputmode="numeric">
+          </label>
+          <label for="reserve">Routing reserve (sat)
+            <input id="reserve" type="number" min="0" max="100000" step="1" inputmode="numeric">
+          </label>
+        </div>
+        <p id="input-error" class="input-error" aria-live="polite" hidden></p>
+      </form>
+
+      <section class="panel receipt" aria-labelledby="result-title">
+        <h2 id="result-title">Coverage</h2>
+        <div id="verdict" class="verdict" aria-live="polite"></div>
+        <div id="receipt-details">
+          <dl class="fee-lines">
+            <div><dt>Invoice</dt><dd id="receipt-invoice"></dd></div>
+            <div class="fee"><dt>Mint fee</dt><dd id="receipt-fee"></dd></div>
+            <div><dt>Routing reserve</dt><dd id="receipt-reserve"></dd></div>
+          </dl>
+          <div class="comparison">
+            <div class="bar-label"><span>Proofs selected</span><strong id="selected"></strong></div>
+            <div class="track" aria-hidden="true"><div id="available-bar" class="bar available"></div></div>
+            <div class="bar-label"><span>Quote requires</span><strong id="required"></strong></div>
+            <div class="track" aria-hidden="true"><div id="required-bar" class="bar required"></div></div>
+          </div>
+          <div class="ceiling"><span>Maximum invoice at this reserve</span><strong id="maximum"></strong></div>
+          <p id="selection" class="selection"></p>
+        </div>
+      </section>
+    </div>
+
+    <details id="about">
+      <summary>About your inputs</summary>
+      <div class="help-content">
+        <p>Use amounts and proof counts from one mint, in sats. Group only proofs with the same denomination and the same keyset fee. Enter the keyset’s public <code>input_fee_ppk</code> value and the reserve shown on your Lightning melt quote. The 100-sat example uses sample values.</p>
+        <p>Cashu sums the fees across selected proofs before rounding up to a whole sat. Mint Margin finds a covering subset with the lowest unrounded mint fee, using the smallest face value and then fewest proofs to break ties. If none covers the quote, it shows the subset with the most value after its mint fee.</p>
+        <p>The reserve is requested up front. A mint that supports returning change can return the unused amount at settlement. Get a fresh quote if you change the invoice. Coverage is arithmetic and routing can still fail.</p>
+        <p>Calculations run locally. Enter only amounts, counts, and public fee rates. Keep your tokens, invoices, and wallet credentials in your wallet.</p>
+        <p class="references"><a href="https://github.com/cashubtc/nuts/blob/main/02.md">Keyset input fees</a> · <a href="https://github.com/cashubtc/nuts/blob/main/05.md">Melt quotes</a> · <a href="https://github.com/cashubtc/nuts/blob/main/08.md">Returning change</a></p>
+      </div>
+    </details>
+    <noscript>Enable JavaScript to calculate quote coverage on this device.</noscript>
+  </main>
+</body>
+</html>
